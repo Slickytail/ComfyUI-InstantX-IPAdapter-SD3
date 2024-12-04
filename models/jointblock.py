@@ -1,5 +1,3 @@
-from typing import Optional
-
 import torch
 from torch import nn
 from torch.nn import functional as F
@@ -7,7 +5,6 @@ from einops import rearrange
 
 from comfy.ldm.modules.attention import optimized_attention
 from comfy.ldm.modules.diffusionmodules.mmdit import (
-    DismantledBlock,
     RMSNorm,
     JointBlock,
 )

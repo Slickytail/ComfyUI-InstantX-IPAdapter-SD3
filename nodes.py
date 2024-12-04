@@ -5,8 +5,6 @@ from functools import partial
 import torch
 import folder_paths
 from transformers import AutoProcessor, SiglipVisionModel
-from PIL import Image
-import numpy as np
 
 from .models.resampler import TimeResampler
 from .models.jointblock import JointBlockIPWrapper, IPAttnProcessor
@@ -27,7 +25,9 @@ def patch(patcher, ip_procs, curried_resampler, weight=1.0):
     Patches a model_sampler to add the ipadapter
     """
     mmdit = patcher.model.diffusion_model
-    timestep_schedule_max = patcher.model.model_config.sampling_settings.get("timesteps", 1000)
+    timestep_schedule_max = patcher.model.model_config.sampling_settings.get(
+        "timesteps", 1000
+    )
     # hook the model's forward function
     # so that when it gets called, we can grab the timestep and send it to the resampler
     ip_options = {"hidden_states": None, "t_emb": None, "t": None, "weight": weight}
