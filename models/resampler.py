@@ -7,49 +7,6 @@ import torch.nn as nn
 from diffusers.models.embeddings import Timesteps, TimestepEmbedding
 
 
-def get_timestep_embedding(
-    timesteps: torch.Tensor,
-    embedding_dim: int,
-    flip_sin_to_cos: bool = False,
-    downscale_freq_shift: float = 1,
-    scale: float = 1,
-    max_period: int = 10000,
-):
-    """
-    This matches the implementation in Denoising Diffusion Probabilistic Models: Create sinusoidal timestep embeddings.
-
-    :param timesteps: a 1-D Tensor of N indices, one per batch element.
-                      These may be fractional.
-    :param embedding_dim: the dimension of the output. :param max_period: controls the minimum frequency of the
-    embeddings. :return: an [N x dim] Tensor of positional embeddings.
-    """
-    assert len(timesteps.shape) == 1, "Timesteps should be a 1d-array"
-
-    half_dim = embedding_dim // 2
-    exponent = -math.log(max_period) * torch.arange(
-        start=0, end=half_dim, dtype=torch.float32, device=timesteps.device
-    )
-    exponent = exponent / (half_dim - downscale_freq_shift)
-
-    emb = torch.exp(exponent)
-    emb = timesteps[:, None].float() * emb[None, :]
-
-    # scale embeddings
-    emb = scale * emb
-
-    # concat sine and cosine embeddings
-    emb = torch.cat([torch.sin(emb), torch.cos(emb)], dim=-1)
-
-    # flip sine and cosine embeddings
-    if flip_sin_to_cos:
-        emb = torch.cat([emb[:, half_dim:], emb[:, :half_dim]], dim=-1)
-
-    # zero pad
-    if embedding_dim % 2 == 1:
-        emb = torch.nn.functional.pad(emb, (0, 1, 0, 0))
-    return emb
-
-
 # FFN
 def FeedForward(dim, mult=4):
     inner_dim = int(dim * mult)
@@ -285,20 +242,3 @@ class TimeResampler(nn.Module):
 
         emb = self.time_embedding(t_emb, None)
         return emb
-
-
-if __name__ == "__main__":
-    model = TimeResampler(
-        dim=1280,
-        depth=4,
-        dim_head=64,
-        heads=20,
-        num_queries=16,
-        embedding_dim=512,
-        output_dim=2048,
-        ff_mult=4,
-        timestep_in_dim=320,
-        timestep_flip_sin_to_cos=True,
-        timestep_freq_shift=0,
-        in_channel_extra_emb=2048,
-    )

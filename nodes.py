@@ -1,6 +1,5 @@
 import os
 import logging
-from functools import partial
 
 import torch
 import folder_paths
