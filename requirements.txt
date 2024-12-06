@@ -1,7 +1,4 @@
 torch
-pillow
-einops==0.8.0
-transformers>=4.37.2
+einops
+transformers
 diffusers
-sentencepiece>=0.2.0
-protobuf>=4.25.5
