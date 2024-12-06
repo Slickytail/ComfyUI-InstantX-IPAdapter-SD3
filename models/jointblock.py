@@ -137,7 +137,8 @@ class JointBlockIPWrapper:
     ):
         self.original_block = original_block
         self.adapter = adapter
-        self.ip_options = ip_options
+        if ip_options is None:
+            self.ip_options = {}
 
     def block_mixing(self, context, x, context_block, x_block, c):
         """

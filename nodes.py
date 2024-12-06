@@ -20,7 +20,7 @@ folder_paths.folder_names_and_paths["ipadapter"] = (
 )
 
 
-def patch(patcher, ip_procs, curried_resampler, weight=1.0):
+def patch(patcher, ip_procs, resampler: TimeResampler, clip_embeds, weight=1.0):
     """
     Patches a model_sampler to add the ipadapter
     """
@@ -30,18 +30,31 @@ def patch(patcher, ip_procs, curried_resampler, weight=1.0):
     )
     # hook the model's forward function
     # so that when it gets called, we can grab the timestep and send it to the resampler
-    ip_options = {"hidden_states": None, "t_emb": None, "t": None, "weight": weight}
+    ip_options = {
+        "hidden_states": None,
+        "t_emb": None,
+        "t": None,
+        "weight": weight,
+        "cond_or_uncond": None,
+    }
 
     def ddit_wrapper(forward, args):
+        batch_size = args["input"].shape[0] // len(args["cond_or_uncond"])
+        # if we're only doing cond or only doing uncond, only pass one of them through the resampler
+        embeds = clip_embeds[args["cond_or_uncond"]]
+        # then, we can repeat the embeds to the batch size
+        embeds = torch.repeat_interleave(embeds, batch_size, dim=0)
+        # the resampler wants between 0 and MAX_STEPS
+        timestep = args["timestep"] * timestep_schedule_max
+        image_emb, t_emb = resampler(embeds, timestep, need_temb=True)
         # these will need to be accessible to the IPAdapters
-        # this is between 0 and 1, so the adapters can calculate start_point and end_point
-        ip_options["t"] = args["timestep"]
-        # but the resampler wants between 0 and MAX_STEPS
-        timestep_expanded = args["timestep"] * timestep_schedule_max
-        image_emb, t_emb = curried_resampler(timestep_expanded)
         ip_options["hidden_states"] = image_emb
         ip_options["t_emb"] = t_emb
-        # is this the right way to call?
+        # this is between 0 and 1, so the adapters can calculate start_point and end_point
+        # actually, do we need to get the sigma value instead?
+        ip_options["t"] = args["timestep"]
+        ip_options["cond_or_uncond"] = args["cond_or_uncond"]
+
         return forward(args["input"], args["timestep"], **args["c"])
 
     patcher.set_model_unet_function_wrapper(ddit_wrapper)
@@ -175,8 +188,7 @@ class ApplyIPAdapterSD3:
         # set model
         new_model = model.clone()
         embeds = ipadapter.encode(image)
-        curried_resampler = partial(ipadapter.resampler, embeds, need_temb=True)
-        patch(new_model, ipadapter.procs, curried_resampler, weight=weight)
+        patch(new_model, ipadapter.procs, ipadapter.resampler, embeds, weight=weight)
         return (new_model,)
 
 
