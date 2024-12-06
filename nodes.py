@@ -127,7 +127,7 @@ class SD3IPAdapter:
             output_hidden_states=True,
         ).hidden_states[-2]
         clip_image_embeds = torch.cat(
-            [torch.zeros_like(clip_image_embeds), clip_image_embeds], dim=0
+            [clip_image_embeds, torch.zeros_like(clip_image_embeds)], dim=0
         )
         clip_image_embeds = clip_image_embeds.to(dtype=torch.float16)
         return clip_image_embeds
