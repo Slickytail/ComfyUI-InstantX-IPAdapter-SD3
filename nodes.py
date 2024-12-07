@@ -19,7 +19,15 @@ folder_paths.folder_names_and_paths["ipadapter"] = (
 )
 
 
-def patch(patcher, ip_procs, resampler: TimeResampler, clip_embeds, weight=1.0):
+def patch(
+    patcher,
+    ip_procs,
+    resampler: TimeResampler,
+    clip_embeds,
+    weight=1.0,
+    start=0.0,
+    end=1.0,
+):
     """
     Patches a model_sampler to add the ipadapter
     """
@@ -32,27 +40,29 @@ def patch(patcher, ip_procs, resampler: TimeResampler, clip_embeds, weight=1.0):
     ip_options = {
         "hidden_states": None,
         "t_emb": None,
-        "t": None,
         "weight": weight,
-        "cond_or_uncond": None,
     }
 
     def ddit_wrapper(forward, args):
-        batch_size = args["input"].shape[0] // len(args["cond_or_uncond"])
-        # if we're only doing cond or only doing uncond, only pass one of them through the resampler
-        embeds = clip_embeds[args["cond_or_uncond"]]
-        # then, we can repeat the embeds to the batch size
-        embeds = torch.repeat_interleave(embeds, batch_size, dim=0)
-        # the resampler wants between 0 and MAX_STEPS
-        timestep = args["timestep"] * timestep_schedule_max
-        image_emb, t_emb = resampler(embeds, timestep, need_temb=True)
-        # these will need to be accessible to the IPAdapters
-        ip_options["hidden_states"] = image_emb
-        ip_options["t_emb"] = t_emb
         # this is between 0 and 1, so the adapters can calculate start_point and end_point
         # actually, do we need to get the sigma value instead?
-        ip_options["t"] = args["timestep"]
-        ip_options["cond_or_uncond"] = args["cond_or_uncond"]
+        t_percent = 1 - args["timestep"].flatten()[0].cpu().item()
+        if start <= t_percent <= end:
+            batch_size = args["input"].shape[0] // len(args["cond_or_uncond"])
+            # if we're only doing cond or only doing uncond, only pass one of them through the resampler
+            embeds = clip_embeds[args["cond_or_uncond"]]
+            # slight efficiency optimization todo: pass the embeds through and then afterwards
+            # repeat to the batch size
+            embeds = torch.repeat_interleave(embeds, batch_size, dim=0)
+            # the resampler wants between 0 and MAX_STEPS
+            timestep = args["timestep"] * timestep_schedule_max
+            image_emb, t_emb = resampler(embeds, timestep, need_temb=True)
+            # these will need to be accessible to the IPAdapters
+            ip_options["hidden_states"] = image_emb
+            ip_options["t_emb"] = t_emb
+        else:
+            ip_options["hidden_states"] = None
+            ip_options["t_emb"] = None
 
         return forward(args["input"], args["timestep"], **args["c"])
 
@@ -168,11 +178,11 @@ class ApplyIPAdapterSD3:
                 ),
                 "start_percent": (
                     "FLOAT",
-                    {"default": 0.0, "min": 0.0, "max": 1.0, "step": 0.001},
+                    {"default": 0.0, "min": 0.0, "max": 1.0, "step": 0.01},
                 ),
                 "end_percent": (
                     "FLOAT",
-                    {"default": 1.0, "min": 0.0, "max": 1.0, "step": 0.001},
+                    {"default": 1.0, "min": 0.0, "max": 1.0, "step": 0.01},
                 ),
             },
         }
@@ -187,7 +197,15 @@ class ApplyIPAdapterSD3:
         # set model
         new_model = model.clone()
         embeds = ipadapter.encode(image)
-        patch(new_model, ipadapter.procs, ipadapter.resampler, embeds, weight=weight)
+        patch(
+            new_model,
+            ipadapter.procs,
+            ipadapter.resampler,
+            embeds,
+            weight=weight,
+            start=start_percent,
+            end=end_percent,
+        )
         return (new_model,)
 
 

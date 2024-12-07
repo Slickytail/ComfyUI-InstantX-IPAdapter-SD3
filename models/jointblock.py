@@ -164,14 +164,20 @@ class JointBlockIPWrapper:
             attn[:, : context_qkv[0].shape[1]],
             attn[:, context_qkv[0].shape[1] :],
         )
-        # IP-Adapter
-        ip_attn = self.adapter(
-            self.ip_options["hidden_states"],
-            *x_qkv,
-            self.ip_options["t_emb"],
-            x_block.attn.num_heads,
-        )
-        x_attn = x_attn + ip_attn * self.ip_options["weight"]
+        # if the current timestep is not in the ipadapter enabling range, then the resampler wasn't run
+        # and the hidden states will be None
+        if (
+            self.ip_options["hidden_states"] is not None
+            and self.ip_options["t_emb"] is not None
+        ):
+            # IP-Adapter
+            ip_attn = self.adapter(
+                self.ip_options["hidden_states"],
+                *x_qkv,
+                self.ip_options["t_emb"],
+                x_block.attn.num_heads,
+            )
+            x_attn = x_attn + ip_attn * self.ip_options["weight"]
 
         # Everything else is unchanged
         if not context_block.pre_only:
