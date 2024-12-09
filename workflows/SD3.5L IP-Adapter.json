@@ -1,6 +1,6 @@
 {
-  "last_node_id": 45,
-  "last_link_id": 73,
+  "last_node_id": 50,
+  "last_link_id": 81,
   "nodes": [
     {
       "id": 8,
@@ -14,7 +14,7 @@
         46
       ],
       "flags": {},
-      "order": 9,
+      "order": 11,
       "mode": 0,
       "inputs": [
         {
@@ -44,35 +44,6 @@
       "widgets_values": []
     },
     {
-      "id": 9,
-      "type": "SaveImage",
-      "pos": [
-        1375,
-        194
-      ],
-      "size": [
-        985.3012084960938,
-        1060.3828125
-      ],
-      "flags": {},
-      "order": 10,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "images",
-          "type": "IMAGE",
-          "link": 9
-        }
-      ],
-      "outputs": [],
-      "properties": {
-        "Node name for S&R": "SaveImage"
-      },
-      "widgets_values": [
-        "ComfyUI"
-      ]
-    },
-    {
       "id": 33,
       "type": "CLIPTextEncode",
       "pos": [
@@ -86,7 +57,7 @@
       "flags": {
         "collapsed": true
       },
-      "order": 6,
+      "order": 7,
       "mode": 0,
       "inputs": [
         {
@@ -154,6 +125,351 @@
       "bgcolor": "#535"
     },
     {
+      "id": 42,
+      "type": "TripleCLIPLoader",
+      "pos": [
+        -210.8244171142578,
+        375.64593505859375
+      ],
+      "size": [
+        315,
+        106
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "CLIP",
+          "type": "CLIP",
+          "links": [
+            64,
+            65
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "TripleCLIPLoader"
+      },
+      "widgets_values": [
+        "clip_g.safetensors",
+        "clip_l.safetensors",
+        "t5xxl_fp16.safetensors"
+      ]
+    },
+    {
+      "id": 6,
+      "type": "CLIPTextEncode",
+      "pos": [
+        258.14404296875,
+        159.2249755859375
+      ],
+      "size": [
+        422.84503173828125,
+        164.31304931640625
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 64
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "links": [
+            58
+          ],
+          "slot_index": 0
+        }
+      ],
+      "title": "CLIP Text Encode (Positive Prompt)",
+      "properties": {
+        "Node name for S&R": "CLIPTextEncode"
+      },
+      "widgets_values": [
+        "a man with red hair"
+      ],
+      "color": "#232",
+      "bgcolor": "#353"
+    },
+    {
+      "id": 45,
+      "type": "CheckpointLoaderSimple",
+      "pos": [
+        -205.12525939941406,
+        203.60665893554688
+      ],
+      "size": [
+        315,
+        98
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            80
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "CLIP",
+          "type": "CLIP",
+          "links": null
+        },
+        {
+          "name": "VAE",
+          "type": "VAE",
+          "links": [
+            72
+          ],
+          "slot_index": 2
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "CheckpointLoaderSimple"
+      },
+      "widgets_values": [
+        "SD3.5-L.safetensors"
+      ]
+    },
+    {
+      "id": 47,
+      "type": "ApplyIPAdapterSD3",
+      "pos": [
+        401.8241882324219,
+        623.6758422851562
+      ],
+      "size": [
+        315,
+        146
+      ],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 80
+        },
+        {
+          "name": "ipadapter",
+          "type": "IP_ADAPTER_SD3_INSTANTX",
+          "link": 75
+        },
+        {
+          "name": "image_embed",
+          "type": "CLIP_VISION_OUTPUT",
+          "link": 79
+        }
+      ],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            81
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ApplyIPAdapterSD3"
+      },
+      "widgets_values": [
+        0.5,
+        0,
+        1
+      ]
+    },
+    {
+      "id": 38,
+      "type": "LoadImage",
+      "pos": [
+        -193.93606567382812,
+        539.2610473632812
+      ],
+      "size": [
+        315,
+        314
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            77
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "oppenheimer.png",
+        "image"
+      ]
+    },
+    {
+      "id": 50,
+      "type": "CLIPVisionEncode",
+      "pos": [
+        -195.75955200195312,
+        904.2363891601562
+      ],
+      "size": [
+        380.4000244140625,
+        78
+      ],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip_vision",
+          "type": "CLIP_VISION",
+          "link": 78
+        },
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 77
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CLIP_VISION_OUTPUT",
+          "type": "CLIP_VISION_OUTPUT",
+          "links": [
+            79
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "CLIPVisionEncode"
+      },
+      "widgets_values": [
+        "center"
+      ]
+    },
+    {
+      "id": 48,
+      "type": "CLIPVisionLoader",
+      "pos": [
+        -174.8817596435547,
+        1020.2452392578125
+      ],
+      "size": [
+        315,
+        58
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "CLIP_VISION",
+          "type": "CLIP_VISION",
+          "links": [
+            78
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "CLIPVisionLoader"
+      },
+      "widgets_values": [
+        "sigclip_vision_patch14_384.safetensors"
+      ]
+    },
+    {
+      "id": 46,
+      "type": "IPAdapterSD3Loader",
+      "pos": [
+        393.33660888671875,
+        859.3168334960938
+      ],
+      "size": [
+        315,
+        82
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "ipadapter",
+          "type": "IP_ADAPTER_SD3_INSTANTX",
+          "links": [
+            75
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "IPAdapterSD3Loader"
+      },
+      "widgets_values": [
+        "ip_sd35l_instantx.bin",
+        "cuda"
+      ]
+    },
+    {
+      "id": 9,
+      "type": "SaveImage",
+      "pos": [
+        836.613037109375,
+        534.8397827148438
+      ],
+      "size": [
+        560.4580688476562,
+        558.8997192382812
+      ],
+      "flags": {},
+      "order": 12,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 9
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "Node name for S&R": "SaveImage"
+      },
+      "widgets_values": [
+        "ComfyUI"
+      ]
+    },
+    {
       "id": 31,
       "type": "KSampler",
       "pos": [
@@ -165,13 +481,13 @@
         262
       ],
       "flags": {},
-      "order": 8,
+      "order": 10,
       "mode": 0,
       "inputs": [
         {
           "name": "model",
           "type": "MODEL",
-          "link": 73
+          "link": 81
         },
         {
           "name": "positive",
@@ -206,255 +522,12 @@
       "widgets_values": [
         0,
         "fixed",
-        20,
+        25,
         4.5,
         "euler",
         "normal",
         1
       ]
-    },
-    {
-      "id": 45,
-      "type": "CheckpointLoaderSimple",
-      "pos": [
-        -205.12525939941406,
-        203.60665893554688
-      ],
-      "size": [
-        315,
-        98
-      ],
-      "flags": {},
-      "order": 1,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "MODEL",
-          "type": "MODEL",
-          "links": [
-            71
-          ],
-          "slot_index": 0
-        },
-        {
-          "name": "CLIP",
-          "type": "CLIP",
-          "links": null
-        },
-        {
-          "name": "VAE",
-          "type": "VAE",
-          "links": [
-            72
-          ],
-          "slot_index": 2
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "CheckpointLoaderSimple"
-      },
-      "widgets_values": [
-        "SD3.5-L.safetensors"
-      ]
-    },
-    {
-      "id": 42,
-      "type": "TripleCLIPLoader",
-      "pos": [
-        -210.8244171142578,
-        375.64593505859375
-      ],
-      "size": [
-        315,
-        106
-      ],
-      "flags": {},
-      "order": 2,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "CLIP",
-          "type": "CLIP",
-          "links": [
-            64,
-            65
-          ],
-          "slot_index": 0
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "TripleCLIPLoader"
-      },
-      "widgets_values": [
-        "clip_g.safetensors",
-        "clip_l.safetensors",
-        "t5xxl_fp16.safetensors"
-      ]
-    },
-    {
-      "id": 39,
-      "type": "IPAdapterSD3Loader",
-      "pos": [
-        -199.45529174804688,
-        541.4168701171875
-      ],
-      "size": [
-        315,
-        106
-      ],
-      "flags": {},
-      "order": 3,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "ipadapter",
-          "type": "IP_ADAPTER_SD3_INSTANTX",
-          "links": [
-            59
-          ],
-          "slot_index": 0
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "IPAdapterSD3Loader"
-      },
-      "widgets_values": [
-        "ip_sd35l_instantx.bin",
-        "google/siglip-so400m-patch14-384",
-        "cuda"
-      ]
-    },
-    {
-      "id": 37,
-      "type": "ApplyIPAdapterSD3",
-      "pos": [
-        329.44049072265625,
-        717.9793090820312
-      ],
-      "size": [
-        315,
-        146
-      ],
-      "flags": {},
-      "order": 7,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "model",
-          "type": "MODEL",
-          "link": 71
-        },
-        {
-          "name": "ipadapter",
-          "type": "IP_ADAPTER_SD3_INSTANTX",
-          "link": 59
-        },
-        {
-          "name": "image",
-          "type": "IMAGE",
-          "link": 60
-        }
-      ],
-      "outputs": [
-        {
-          "name": "MODEL",
-          "type": "MODEL",
-          "links": [
-            73
-          ],
-          "slot_index": 0
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "ApplyIPAdapterSD3"
-      },
-      "widgets_values": [
-        0.5,
-        0,
-        1
-      ]
-    },
-    {
-      "id": 38,
-      "type": "LoadImage",
-      "pos": [
-        -157.96124267578125,
-        851.943359375
-      ],
-      "size": [
-        315,
-        314
-      ],
-      "flags": {},
-      "order": 4,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "IMAGE",
-          "type": "IMAGE",
-          "links": [
-            60
-          ],
-          "slot_index": 0
-        },
-        {
-          "name": "MASK",
-          "type": "MASK",
-          "links": null
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "LoadImage"
-      },
-      "widgets_values": [
-        "oppenheimer.png",
-        "image"
-      ]
-    },
-    {
-      "id": 6,
-      "type": "CLIPTextEncode",
-      "pos": [
-        258.14404296875,
-        159.2249755859375
-      ],
-      "size": [
-        422.84503173828125,
-        164.31304931640625
-      ],
-      "flags": {},
-      "order": 5,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "clip",
-          "type": "CLIP",
-          "link": 64
-        }
-      ],
-      "outputs": [
-        {
-          "name": "CONDITIONING",
-          "type": "CONDITIONING",
-          "links": [
-            58
-          ],
-          "slot_index": 0
-        }
-      ],
-      "title": "CLIP Text Encode (Positive Prompt)",
-      "properties": {
-        "Node name for S&R": "CLIPTextEncode"
-      },
-      "widgets_values": [
-        "a man with red hair"
-      ],
-      "color": "#232",
-      "bgcolor": "#353"
     }
   ],
   "links": [
@@ -499,22 +572,6 @@
       "CONDITIONING"
     ],
     [
-      59,
-      39,
-      0,
-      37,
-      1,
-      "IP_ADAPTER_SD3_INSTANTX"
-    ],
-    [
-      60,
-      38,
-      0,
-      37,
-      2,
-      "IMAGE"
-    ],
-    [
       64,
       42,
       0,
@@ -531,14 +588,6 @@
       "CLIP"
     ],
     [
-      71,
-      45,
-      0,
-      37,
-      0,
-      "MODEL"
-    ],
-    [
       72,
       45,
       2,
@@ -547,8 +596,48 @@
       "VAE"
     ],
     [
-      73,
-      37,
+      75,
+      46,
+      0,
+      47,
+      1,
+      "IP_ADAPTER_SD3_INSTANTX"
+    ],
+    [
+      77,
+      38,
+      0,
+      50,
+      1,
+      "IMAGE"
+    ],
+    [
+      78,
+      48,
+      0,
+      50,
+      0,
+      "CLIP_VISION"
+    ],
+    [
+      79,
+      50,
+      0,
+      47,
+      2,
+      "CLIP_VISION_OUTPUT"
+    ],
+    [
+      80,
+      45,
+      0,
+      47,
+      0,
+      "MODEL"
+    ],
+    [
+      81,
+      47,
       0,
       31,
       0,
@@ -559,10 +648,10 @@
   "config": {},
   "extra": {
     "ds": {
-      "scale": 0.7400249944258206,
+      "scale": 0.6727499949325677,
       "offset": [
-        619.6935007454382,
-        -88.85164602709244
+        739.7288455474428,
+        151.74268927695144
       ]
     },
     "ue_links": []

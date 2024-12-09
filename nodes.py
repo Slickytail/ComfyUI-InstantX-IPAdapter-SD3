@@ -74,13 +74,8 @@ def patch(
 
 
 class SD3IPAdapter:
-    def __init__(self, encoder_path: str, checkpoint: str, device):
+    def __init__(self, checkpoint: str, device):
         self.device = device
-        # load image encoder
-        self.encoder = SiglipVisionModel.from_pretrained(encoder_path).to(
-            self.device, dtype=torch.float16
-        )
-        self.processor = AutoProcessor.from_pretrained(encoder_path)
         # load the checkpoint right away
         self.state_dict = torch.load(
             os.path.join(MODELS_DIR, checkpoint),
@@ -126,21 +121,6 @@ class SD3IPAdapter:
         )
         self.procs.load_state_dict(self.state_dict["ip_adapter"])
 
-    @torch.inference_mode()
-    def encode(self, image):
-        clip_image = self.processor.image_processor(
-            image, return_tensors="pt", do_rescale=False
-        ).pixel_values
-        clip_image_embeds = self.encoder(
-            clip_image.to(self.device, dtype=self.encoder.dtype),
-            output_hidden_states=True,
-        ).hidden_states[-2]
-        clip_image_embeds = torch.cat(
-            [clip_image_embeds, torch.zeros_like(clip_image_embeds)], dim=0
-        )
-        clip_image_embeds = clip_image_embeds.to(dtype=torch.float16)
-        return clip_image_embeds
-
 
 class IPAdapterSD3Loader:
     @classmethod
@@ -148,7 +128,6 @@ class IPAdapterSD3Loader:
         return {
             "required": {
                 "ipadapter": (folder_paths.get_filename_list("ipadapter"),),
-                "clip_vision": (["google/siglip-so400m-patch14-384"],),
                 "provider": (["cuda", "cpu", "mps"],),
             }
         }
@@ -158,9 +137,9 @@ class IPAdapterSD3Loader:
     FUNCTION = "load_model"
     CATEGORY = "InstantXNodes"
 
-    def load_model(self, ipadapter, clip_vision, provider):
+    def load_model(self, ipadapter, provider):
         logging.info("Loading InstantX IPAdapter SD3 model.")
-        model = SD3IPAdapter(clip_vision, ipadapter, provider)
+        model = SD3IPAdapter(ipadapter, provider)
         return (model,)
 
 
@@ -171,7 +150,7 @@ class ApplyIPAdapterSD3:
             "required": {
                 "model": ("MODEL",),
                 "ipadapter": ("IP_ADAPTER_SD3_INSTANTX",),
-                "image": ("IMAGE",),
+                "image_embed": ("CLIP_VISION_OUTPUT",),
                 "weight": (
                     "FLOAT",
                     {"default": 1.0, "min": -1.0, "max": 5.0, "step": 0.05},
@@ -192,11 +171,15 @@ class ApplyIPAdapterSD3:
     CATEGORY = "InstantXNodes"
 
     def apply_ipadapter(
-        self, model, ipadapter, image, weight, start_percent, end_percent
+        self, model, ipadapter, image_embed, weight, start_percent, end_percent
     ):
         # set model
         new_model = model.clone()
-        embeds = ipadapter.encode(image)
+        # add uncond embedding
+        image_embed = image_embed.penultimate_hidden_states
+        embeds = torch.cat([image_embed, torch.zeros_like(image_embed)], dim=0).to(
+            ipadapter.device, dtype=torch.float16
+        )
         patch(
             new_model,
             ipadapter.procs,
