@@ -3,7 +3,6 @@ import logging
 
 import torch
 import folder_paths
-from transformers import AutoProcessor, SiglipVisionModel
 
 from .models.resampler import TimeResampler
 from .models.jointblock import JointBlockIPWrapper, IPAttnProcessor
