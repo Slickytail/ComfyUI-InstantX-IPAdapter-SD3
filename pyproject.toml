@@ -1,0 +1,15 @@
+[project]
+name = "comfyui-instantx-ipadapter-sd3"
+description = "ComfyUI implementation of the [a/InstantX IP-Adapter for SD3.5 Large](https://huggingface.co/InstantX/SD3.5-Large-IP-Adapter)."
+version = "1.0.0"
+license = {file = "LICENSE"}
+dependencies = ["torch", "einops", "diffusers"]
+
+[project.urls]
+Repository = "https://github.com/Slickytail/ComfyUI-InstantX-IPAdapter-SD3"
+#  Used by Comfy Registry https://comfyregistry.org
+
+[tool.comfy]
+PublisherId = ""
+DisplayName = "ComfyUI-InstantX-IPAdapter-SD3"
+Icon = ""
