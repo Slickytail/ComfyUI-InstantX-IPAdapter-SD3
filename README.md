@@ -7,7 +7,7 @@ ComfyUI implementation of the [InstantX IP-Adapter for SD3.5 Large](https://hugg
 Download [`ip-adapter.bin` from the original repository](https://huggingface.co/InstantX/SD3.5-Large-IP-Adapter/blob/main/ip-adapter.bin), and place it in the `models/ipadapter` folder of your ComfyUI installation. (I suggest renaming it to something easier to remember).
 
 Download [`siglip_vision_patch14_384.safetensors` from ComfyUI's rehost](https://huggingface.co/Comfy-Org/sigclip_vision_384) and place it in the `models/clip_vision` folder.  
-The original model was trained on [google/siglip-400m-patch14-384](https://huggingface.co/google/siglip-so400m-patch14-384). To be honest, I'm not sure where the comfy rehost model comes from, but it gives very similar results.
+The original model was trained on [google/siglip-400m-patch14-384](https://huggingface.co/google/siglip-so400m-patch14-384). To be honest, I'm not sure where the comfy rehost model comes from, but it gives very similar results: so I suspect that it's a slightly modified version of the original google model.
 
 ## Usage
 The IP-Adapter can be used with **Stable Diffusion 3.5 Large** and **Stable Diffusion 3.5 Large Turbo**.  
