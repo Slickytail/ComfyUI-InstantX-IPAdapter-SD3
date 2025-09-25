@@ -3,6 +3,7 @@ import logging
 
 import torch
 import folder_paths
+from safetensors.torch import load_file as open_safetensors
 
 from .models.resampler import TimeResampler
 from .models.jointblock import JointBlockIPWrapper, IPAttnProcessor
@@ -75,12 +76,18 @@ def patch(
 class SD3IPAdapter:
     def __init__(self, checkpoint: str, device):
         self.device = device
-        # load the checkpoint right away
-        self.state_dict = torch.load(
-            os.path.join(MODELS_DIR, checkpoint),
-            map_location=self.device,
-            weights_only=True,
-        )
+        # load safetensors
+        if checkpoint.endswith("safetensors") or checkpoint.endswith("sft"):
+            self.state_dict = open_safetensors(
+                os.path.join(MODELS_DIR, checkpoint), device=self.device
+            )
+        else:
+            # load the checkpoint right away
+            self.state_dict = torch.load(
+                os.path.join(MODELS_DIR, checkpoint),
+                map_location=self.device,
+                weights_only=True,
+            )
         # todo: infer some of the params from the checkpoint instead of hardcoded
         self.resampler = TimeResampler(
             dim=1280,
